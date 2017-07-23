@@ -1,4 +1,4 @@
-package chunkedtest;
+package transfertypebenchmark;
 
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
