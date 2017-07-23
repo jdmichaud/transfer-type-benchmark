@@ -17,6 +17,7 @@ public class SimpleEndpoint {
   @GET
   @Produces("application/json")
   public String simpleRequest() {
-    return String.join("\n", resourceService.files);
+    //return String.join("\n", resourceService.files);
+    return "{ \"hello\": 12 }";
   }
 }
