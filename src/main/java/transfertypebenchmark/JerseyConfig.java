@@ -9,9 +9,10 @@ import javax.ws.rs.ApplicationPath;
 @Component
 @ApplicationPath("/api")
 public class JerseyConfig extends ResourceConfig {
-
   public JerseyConfig() {
     register(SimpleEndpoint.class);
+    register(ChunkedEndpoint.class);
+    register(LongPollingEndpoint.class);
     property(ServletProperties.FILTER_FORWARD_ON_404, true);
   }
 

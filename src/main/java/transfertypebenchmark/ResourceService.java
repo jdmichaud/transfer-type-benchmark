@@ -1,5 +1,7 @@
 package transfertypebenchmark;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Service;
 
@@ -13,24 +15,16 @@ import java.util.stream.Stream;
 
 @Service
 public class ResourceService {
-  public List<String> files = new LinkedList<>();
+  public String data;
 
   public ResourceService() {
+    Resource resource = new ClassPathResource("data.txt");
+    BufferedReader br = null;
     try {
-      ClassLoader cl = this.getClass().getClassLoader();
-      PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver =
-        new PathMatchingResourcePatternResolver(cl);
-      this.files = Stream.of(pathMatchingResourcePatternResolver.getResources("classpath:file*.json")).map(resource -> {
-        BufferedReader br = null;
-        try {
-          br = new BufferedReader(new InputStreamReader(resource.getInputStream()));
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-        return br.lines().collect(Collectors.joining("\n"));
-      }).collect(Collectors.toList());
+      br = new BufferedReader(new InputStreamReader(resource.getInputStream()));
     } catch (IOException e) {
       e.printStackTrace();
     }
+    data = br.lines().collect(Collectors.joining("\n"));
   };
 }

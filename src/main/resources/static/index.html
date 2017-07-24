@@ -6,7 +6,18 @@
   </head>
   <body>
     <div ng-app="benchmark">
-      <transfer-type-benchmark service="simpleRequestService" test="toto"></transfer-type-benchmark>
+      <div>
+        <h2>Simple</h2>
+        <transfer-type-benchmark service="simpleRequestService"></transfer-type-benchmark>
+      </div>
+      <div>
+        <h2>Chunked</h2>
+        <transfer-type-benchmark service="chunkedRequestService"></transfer-type-benchmark>
+      </div>
+      <div>
+        <h2>Long polling</h2>
+        <transfer-type-benchmark service="longPollingRequestService"></transfer-type-benchmark>
+      </div>
     </div>
   </body>
   <script src="benchmark.js"></script>
