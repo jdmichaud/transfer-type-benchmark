@@ -20,11 +20,11 @@ app.service('simpleRequestService', function ($http) {
   service.transferred = 0;
   service.endpoint = '/api/simple';
 
-  service.start = function (chunk_size = 1024) {
+  service.start = function (chunkSize = 1024) {
   console.log('starting request');
   service.startTimestamp = Date.now();
   service.running = true;
-  $http.get(`${service.endpoint}?chunk-size=${chunk_size}`).then(response => {
+  $http.get(`${service.endpoint}?chunk-size=${chunkSize}`).then(response => {
     service.stopTimestamp = Date.now();
     service.running = false;
     service.transferred = response.data.length;
@@ -43,11 +43,11 @@ app.service('chunkedRequestService', function ($http) {
   service.transferred = 0;
   service.endpoint = '/api/chunked';
 
-  service.start = function (chunk_size = 1024) {
+  service.start = function (chunkSize = 1024) {
   console.log('starting request');
   service.startTimestamp = Date.now();
   service.running = true;
-  $http.get(`${service.endpoint}?chunk-size=${chunk_size}`).then(response => {
+  $http.get(`${service.endpoint}?chunk-size=${chunkSize}`).then(response => {
     service.stopTimestamp = Date.now();
     service.running = false;
     service.transferred = response.data.length;
@@ -67,9 +67,9 @@ app.service('longPollingRequestService', function ($http) {
   service.endpoint = '/api/lp';
   service.aggregatedResponse = "";
 
-  service.start = function (chunk_size = 1024) {
+  service.start = function (chunkSize = 1024) {
     function request(callback) {
-        return $http.get(`${service.endpoint}?chunk-size=${chunk_size}`).then(callback);
+        return $http.get(`${service.endpoint}?chunk-size=${chunkSize}`).then(callback);
     }
 
     function resolve(response) {
@@ -103,14 +103,14 @@ app.service('webSocketService', function ($http, $rootScope) {
   service.endpoint = `ws://${location.hostname}:8080/api/websocket`;
   service.aggregatedResponse = "";
 
-  service.start = function (chunk_size = 1024) {
+  service.start = function (chunkSize = 1024) {
     console.log('starting request');
     service.startTimestamp = Date.now();
     service.running = true;
     webSocket = new WebSocket(service.endpoint);
     // Setup the event callback
     webSocket.onopen = function () {
-      webSocket.send(`chunk_size:${chunk_size}`);
+      webSocket.send(`chunkSize:${chunkSize}`);
     };
     webSocket.onerror = function (error) { console.log(error); };
     webSocket.onclose = function () {
@@ -139,10 +139,12 @@ app.component('transferTypeBenchmark', {
     const $ctrl = this;
     $ctrl.$onInit = function () {
       $ctrl.serviceInstance = $injector.get($ctrl.service);
+      $ctrl.chunkSize = 1024;
     }
   },
   template: `
-  <button ng-click="$ctrl.serviceInstance.start()">Start</button><br>
+  <button ng-click="$ctrl.serviceInstance.start($ctrl.chunkSize)">Start</button>
+  <input type="text" ng-model="$ctrl.chunkSize"><br>
   running: {{ $ctrl.serviceInstance.running }}<br>
   time taken: {{ $ctrl.serviceInstance.stopTimestamp - $ctrl.serviceInstance.startTimestamp }}<br>
   byte transferred: {{ $ctrl.serviceInstance.transferred }}<br>
