@@ -20,12 +20,14 @@ public class LongPollingEndpoint {
     @Autowired
     ResourceService resourceService;
 
+    /**
+     * @return A piece of the string or an empty string when transfer is done.
+     */
     @GET
     @Produces("text/plain")
     public String longPollingRequest() {
       int segmentLength = index + BUFFER_SIZE > resourceService.data.length() ? resourceService.data.length() - index : BUFFER_SIZE;
       index += BUFFER_SIZE;
-      logger.info("send from {} to {} of {}", index - BUFFER_SIZE, index - BUFFER_SIZE + segmentLength, resourceService.data.length());
       return resourceService.data.substring(index - BUFFER_SIZE, index - BUFFER_SIZE + segmentLength);
     }
 }
