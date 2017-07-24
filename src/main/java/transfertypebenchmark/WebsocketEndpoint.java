@@ -21,7 +21,10 @@ public class WebsocketEndpoint extends TextWebSocketHandler {
 
   @Override
   public void handleTextMessage(WebSocketSession session, TextMessage message) {
-    int chunkSize = new Integer(new String(message.asBytes()).split(":")[1]);
+    String[] smessages = new String(message.asBytes()).split(";");
+    int chunkSize = new Integer(smessages[0].split(":")[1]);
+    int maxDelay = new Integer(smessages[1].split(":")[1]);
+    DelayGenerator delayGenerator = new DelayGenerator(maxDelay);
     int responseLength = resourceService.data.length();
     try {
       for (int i = 0; i < responseLength; i += chunkSize) {
