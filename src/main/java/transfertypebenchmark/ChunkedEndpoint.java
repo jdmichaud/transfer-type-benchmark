@@ -6,31 +6,28 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import java.io.IOException;
 
 @Component
 @Path("/chunked")
 public class ChunkedEndpoint {
   private static final Logger logger = LoggerFactory.getLogger(SimpleEndpoint.class);
-  private static final int BUFFER_SIZE = 1024;
 
   @Autowired
   ResourceService resourceService;
 
   @GET
   @Produces("text/plain")
-  public ChunkedOutput<String> chunkedRequest() {
+  public ChunkedOutput<String> chunkedRequest(@DefaultValue("1024") @QueryParam("chunk-size") int chunkSize) {
     ChunkedOutput<String> chunkedOutput = new ChunkedOutput<>(String.class);
 
     new Thread(() -> {
       String response = resourceService.data;
       try {
         int responseLength = response.length();
-        for (int i = 0; i < responseLength; i += BUFFER_SIZE) {
-          int length = i + BUFFER_SIZE > responseLength ? responseLength - i : BUFFER_SIZE;
+        for (int i = 0; i < responseLength; i += chunkSize) {
+          int length = i + chunkSize > responseLength ? responseLength - i : chunkSize;
           chunkedOutput.write(response.substring(i, i + length));
         }
       } catch (IOException e){

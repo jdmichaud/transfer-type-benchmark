@@ -20,11 +20,11 @@ app.service('simpleRequestService', function ($http) {
   service.transferred = 0;
   service.endpoint = '/api/simple';
 
-  service.start = function () {
+  service.start = function (chunk_size = 1024) {
   console.log('starting request');
   service.startTimestamp = Date.now();
   service.running = true;
-  $http.get(service.endpoint).then(response => {
+  $http.get(`${service.endpoint}?chunk-size=${chunk_size}`).then(response => {
     service.stopTimestamp = Date.now();
     service.running = false;
     service.transferred = response.data.length;
@@ -43,11 +43,11 @@ app.service('chunkedRequestService', function ($http) {
   service.transferred = 0;
   service.endpoint = '/api/chunked';
 
-  service.start = function () {
+  service.start = function (chunk_size = 1024) {
   console.log('starting request');
   service.startTimestamp = Date.now();
   service.running = true;
-  $http.get(service.endpoint).then(response => {
+  $http.get(`${service.endpoint}?chunk-size=${chunk_size}`).then(response => {
     service.stopTimestamp = Date.now();
     service.running = false;
     service.transferred = response.data.length;
@@ -67,28 +67,28 @@ app.service('longPollingRequestService', function ($http) {
   service.endpoint = '/api/lp';
   service.aggregatedResponse = "";
 
-  function request(callback) {
-  return $http.get(service.endpoint).then(callback);
-  }
+  service.start = function (chunk_size = 1024) {
+    function request(callback) {
+        return $http.get(`${service.endpoint}?chunk-size=${chunk_size}`).then(callback);
+    }
 
-  function resolve(response) {
-  if (response.data.length) {
-    service.aggregatedResponse += response.data;
-    return request(resolve);
-  }
-  return service.aggregatedResponse;
-  }
+    function resolve(response) {
+        if (response.data.length) {
+            service.aggregatedResponse += response.data;
+            return request(resolve);
+        }
+        return service.aggregatedResponse;
+    }
 
-  service.start = function () {
-  console.log('starting request');
-  service.startTimestamp = Date.now();
-  service.running = true;
-  request(resolve).then(response => {
-    service.stopTimestamp = Date.now();
-    service.running = false;
-    service.transferred = response.length;
-    console.log('request done');
-  });
+    console.log('starting request');
+    service.startTimestamp = Date.now();
+    service.running = true;
+    request(resolve).then(response => {
+      service.stopTimestamp = Date.now();
+      service.running = false;
+      service.transferred = response.length;
+      console.log('request done');
+    });
   };
 
   return service;
@@ -103,13 +103,15 @@ app.service('webSocketService', function ($http, $rootScope) {
   service.endpoint = `ws://${location.hostname}:8080/api/websocket`;
   service.aggregatedResponse = "";
 
-  service.start = function () {
+  service.start = function (chunk_size = 1024) {
     console.log('starting request');
     service.startTimestamp = Date.now();
     service.running = true;
     webSocket = new WebSocket(service.endpoint);
     // Setup the event callback
-    webSocket.onopen = function () {};
+    webSocket.onopen = function () {
+      webSocket.send(`chunk_size:${chunk_size}`);
+    };
     webSocket.onerror = function (error) { console.log(error); };
     webSocket.onclose = function () {
       $rootScope.$apply(() => {
@@ -128,16 +130,16 @@ app.service('webSocketService', function ($http, $rootScope) {
 });
 
 app.component('transferTypeBenchmark', {
-  bindings: {
-  service: '@',
-  test: '@',
+    bindings: {
+    service: '@',
+    test: '@',
   },
   controllerAs: '$ctrl',
-  controller: function ($injector) {
-  const $ctrl = this;
-  $ctrl.$onInit = function () {
-    $ctrl.serviceInstance = $injector.get($ctrl.service);
-  }
+    controller: function ($injector) {
+    const $ctrl = this;
+    $ctrl.$onInit = function () {
+      $ctrl.serviceInstance = $injector.get($ctrl.service);
+    }
   },
   template: `
   <button ng-click="$ctrl.serviceInstance.start()">Start</button><br>
